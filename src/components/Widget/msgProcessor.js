@@ -15,6 +15,12 @@ export function isVideo(message) {
     && message.attachment.type === 'video';
 }
 
+export function isCode(message) {
+  return Object.keys(message).includes('attachment')
+    && Object.keys(message.attachment).includes('type')
+    && message.attachment.type === 'code';
+}
+
 export function isImage(message) {
   return Object.keys(message).includes('attachment')
     && Object.keys(message.attachment).includes('type')

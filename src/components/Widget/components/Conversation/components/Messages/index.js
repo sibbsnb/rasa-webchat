@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
 
 import { MESSAGES_TYPES } from 'constants';
-import { Video, Image, Message, Carousel, Buttons } from 'messagesComponents';
+import { Code, Video, Image, Message, Carousel, Buttons } from 'messagesComponents';
 
 import './styles.scss';
 import ThemeContext from '../../../../ThemeContext';
@@ -50,6 +50,9 @@ class Messages extends Component {
         }
         case MESSAGES_TYPES.VIDREPLY.VIDEO: {
           return Video;
+        }
+        case MESSAGES_TYPES.CODEREPLY.CODE: {
+          return Code;
         }
         case MESSAGES_TYPES.IMGREPLY.IMAGE: {
           return Image;

@@ -5,6 +5,7 @@ import { shallow } from 'enzyme';
 import {
   createNewMessage,
   createVideoSnippet,
+  createCodeSnippet,
   createImageSnippet,
   createComponentMessage,
   createButtons
@@ -12,6 +13,7 @@ import {
 
 import Messages from '../index';
 import Video from '../components/VidReply';
+import Code from '../components/CodeReply';
 import Image from '../components/ImgReply';
 import Message from '../components/Message';
 import Buttons from '../components/Buttons';
@@ -38,6 +40,7 @@ describe('<Messages />', () => {
 
   const message = createNewMessage('Response message 1');
   const srcVideo = createVideoSnippet({ title: 'video', video: 'video' });
+  const srcCode = createCodeSnippet({ title: 'code', code: 'code' });
   const srcImage = createImageSnippet({
     title: 'image',
     image: 'image',
@@ -70,6 +73,7 @@ describe('<Messages />', () => {
   const responseMessages = List([
     message,
     srcVideo,
+    srcCode,
     srcImage,
     customComp,
     buttons
@@ -88,6 +92,10 @@ describe('<Messages />', () => {
 
   it('should render a Video component', () => {
     expect(messagesComponent.find(Video)).toHaveLength(1);
+  });
+
+  it('should render a Code component', () => {
+    expect(messagesComponent.find(Code)).toHaveLength(1);
   });
 
   it('should render a Image component', () => {

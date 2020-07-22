@@ -41,6 +41,7 @@ class Message extends PureComponent {
         <div
           className="rw-message-text"
         >
+
           {sender === 'response' ? (
             <ReactMarkdown
               className={'rw-markdown'}

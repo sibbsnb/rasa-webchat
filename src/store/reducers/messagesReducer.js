@@ -5,6 +5,7 @@ import {
   createButtons,
   createNewMessage,
   createCarousel,
+  createCodeSnippet,
   createVideoSnippet,
   createImageSnippet,
   createComponentMessage,
@@ -44,6 +45,9 @@ export default function (storage) {
       }
       case actionTypes.ADD_NEW_VIDEO_VIDREPLY: {
         return storeMessage(state.push(createVideoSnippet(action.video, MESSAGE_SENDER.RESPONSE)));
+      }
+      case actionTypes.ADD_NEW_CODE_CODEREPLY: {
+        return storeMessage(state.push(createCodeSnippet(action.code, MESSAGE_SENDER.RESPONSE)));
       }
       case actionTypes.ADD_NEW_IMAGE_IMGREPLY: {
         return storeMessage(state.push(createImageSnippet(action.image, MESSAGE_SENDER.RESPONSE)));

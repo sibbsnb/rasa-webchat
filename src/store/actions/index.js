@@ -117,6 +117,13 @@ export function addVideoSnippet(video) {
   };
 }
 
+export function addCodeSnippet(code) {
+  return {
+    type: actions.ADD_NEW_CODE_CODEREPLY,
+    code
+  };
+}
+
 export function addImageSnippet(image) {
   return {
     type: actions.ADD_NEW_IMAGE_IMGREPLY,

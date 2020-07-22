@@ -11,6 +11,9 @@ export const MESSAGE_SENDER = {
 export const MESSAGES_TYPES = {
   TEXT: 'text',
   CAROUSEL: 'carousel',
+  CODEREPLY: {
+    CODE: 'codereply'
+  },
   VIDREPLY: {
     VIDEO: 'vidreply'
   },
@@ -43,7 +46,8 @@ export const PROP_TYPES = {
       MESSAGES_TYPES.BUTTONS,
       MESSAGES_TYPES.CAROUSEL,
       MESSAGES_TYPES.IMGREPLY.IMAGE,
-      MESSAGES_TYPES.VIDREPLY.VIDEO
+      MESSAGES_TYPES.VIDREPLY.VIDEO,
+      MESSAGES_TYPES.CODEREPLY.CODE
     ]),
     id: PropTypes.number,
     text: PropTypes.string,
@@ -67,6 +71,17 @@ export const PROP_TYPES = {
     type: PropTypes.oneOf([
       MESSAGES_TYPES.TEXT,
       MESSAGES_TYPES.VIDREPLY.VIDEO
+    ]),
+    id: PropTypes.number,
+    title: PropTypes.string,
+    src: PropTypes.string,
+    sender: senderType
+  }),
+
+  CODEREPLY: ImmutablePropTypes.contains({
+    type: PropTypes.oneOf([
+      MESSAGES_TYPES.TEXT,
+      MESSAGES_TYPES.CODEREPLY.CODE
     ]),
     id: PropTypes.number,
     title: PropTypes.string,

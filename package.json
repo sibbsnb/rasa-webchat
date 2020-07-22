@@ -36,7 +36,10 @@
     "slick-carousel": "^1.8.1",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",
-    "sockjs-client": "^1.4.0"
+    "sockjs-client": "^1.4.0",
+    "react-ace": "9.1.1",
+    "react-ace-builds": "^7.3.1",
+    "skulpt": "^1.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

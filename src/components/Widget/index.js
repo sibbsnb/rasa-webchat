@@ -13,6 +13,7 @@ import {
   addResponseMessage,
   addCarousel,
   addVideoSnippet,
+  addCodeSnippet,
   addImageSnippet,
   addButtons,
   renderCustomComponent,
@@ -35,7 +36,7 @@ import {
 } from 'actions';
 
 import { SESSION_NAME, NEXT_MESSAGE } from 'constants';
-import { isVideo, isImage, isButtons, isText, isCarousel } from './msgProcessor';
+import { isCode, isVideo, isImage, isButtons, isText, isCarousel } from './msgProcessor';
 import WidgetLayout from './layout';
 import { storeLocalSession, getLocalSession } from '../../store/reducers/helper';
 
@@ -549,7 +550,17 @@ class Widget extends Component {
           video: element.src
         })
       );
-    } else if (isImage(messageClean)) {
+    }
+    else if (isCode(messageClean)) {
+      const element = messageClean.attachment.payload;
+      this.props.dispatch(
+        addCodeSnippet({
+          title: element.title,
+          code: element.src
+        })
+      );
+    }
+    else if (isImage(messageClean)) {
       const element = messageClean.attachment.payload;
       this.props.dispatch(
         addImageSnippet({

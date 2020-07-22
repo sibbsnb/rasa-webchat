@@ -41,6 +41,10 @@ export function addVideoSnippet(video) {
   store.dispatch(actions.addVideoSnippet(video));
 }
 
+export function addCodeSnippet(code) {
+  store.dispatch(actions.addCodeSnippet(code));
+}
+
 export function addImageSnippet(image) {
   store.dispatch(actions.addImageSnippet(image));
 }

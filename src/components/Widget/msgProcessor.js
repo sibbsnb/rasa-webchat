@@ -18,7 +18,9 @@ export function isVideo(message) {
 export function isCode(message) {
   return Object.keys(message).includes('attachment')
     && Object.keys(message.attachment).includes('type')
-    && message.attachment.type === 'code';
+    && message.attachment.type === 'code'
+    && Object.keys(message.attachment.payload).indexOf('elements') >= 0
+    && message.attachment.payload.elements.length > 0;
 }
 
 export function isImage(message) {

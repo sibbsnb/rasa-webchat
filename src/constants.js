@@ -86,7 +86,15 @@ export const PROP_TYPES = {
     id: PropTypes.number,
     title: PropTypes.string,
     src: PropTypes.string,
-    sender: senderType
+    sender: senderType,
+    elements: ImmutablePropTypes.listOf(
+      ImmutablePropTypes.mapContains({
+        title: PropTypes.string,
+        subtitle: PropTypes.string,
+        imageUrl: PropTypes.string,
+        buttons: ImmutablePropTypes.listOf(replybuttons),
+        defaultActions: replybuttons
+      }))
   }),
 
   IMGREPLY: ImmutablePropTypes.contains({

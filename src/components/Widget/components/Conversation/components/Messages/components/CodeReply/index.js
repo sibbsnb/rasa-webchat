@@ -1,53 +1,43 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, useContext } from 'react';
 import { PROP_TYPES } from 'constants';
 import AceEditor from 'react-ace';
 //import { split as SplitEditor } from "react-ace";
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-solarized_light';
 import 'skulpt/dist/skulpt.min';
 import 'skulpt/dist/skulpt-stdlib';
 
 import './styles.scss';
 
-function builtinRead(x)
-{
-  if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-    throw "File not found: '" + x + "'";
-  return Sk.builtinFiles["files"][x];
+import { addUserMessage, emitUserMessage, setButtons, toggleInputDisabled, changeInputFieldHint } from 'actions';
+import ThemeContext from '../../../../../../ThemeContext';
+
+import { initPython, runPython } from './python';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+
+function builtinRead(x) {
+  if (Sk.builtinFiles === undefined || Sk.builtinFiles['files'][x] === undefined) {
+    throw 'File not found: \'' + x + '\'';
+  }
+  return Sk.builtinFiles['files'][x];
 }
-
-function python_out(output)
-{
-  console.log('out ' + output)
-}
-
-function onChange(newValue) {
-  console.log('change', newValue);
-
-
-  Sk.configure({
-    read: builtinRead,
-    output: python_out,
-    __future__: Sk.python3,
-  })
-  Sk.misceval.asyncToPromise(() => {
-    return Sk.importMainWithBody('<stdin>', false, newValue, true)
-  })
-    .then(mod => {
-      const method = mod.tp$getattr(Sk.ffi.remapToPy('run'));
-      //const out = Sk.misceval.call(method, undefined, undefined, undefined, undefined);
-      //console.log('out::' + out);
-      //return [out, Sk.ffi.remapToJs(out)]
-    })
-}
-
-
 
 class CodeReply extends PureComponent {
 
   constructor(props) {
     super(props);
-    this.state = { seconds: 0 };
+    this.onChangeNew = this.onChangeNew.bind(this);
+    this.pythonOutNew = this.pythonOutNew.bind(this);
+    this.state = { seconds: 0, output: '', output_title: 'Output', code: '', code_output: '', code_matched: false };
+    initPython();
+
+    console.log(`props.message:: ${props.message}`);
+
+    //const code_buttons = props.message;
+    //console.log(props.message);
+    //const { mainColor, assistTextColor } = useContext(ThemeContext);
   }
 
 
@@ -58,69 +48,232 @@ class CodeReply extends PureComponent {
   }
 
   componentDidMount() {
-    this.interval = setInterval(() => this.tick(), 1000);
+    //this.interval = setInterval(() => this.tick(), 1000);
   }
 
   componentWillUnmount() {
     clearInterval(this.interval);
   }
 
+  pythonOutNew(output) {
+    console.log('Code output new ' + output);
+    output = this.state.output + '' + output;
+    var code_output = output
+    this.setState({ output });
+    this.setState({ code_output });
+    console.log('Code output after ' + this.state.output);
+    //const expected = this.props.message.get('code'.trim());
+
+    const code_buttons = this.props.message.toJS();
+    const expected = code_buttons.code[0]['expected_output'].trim();
+    console.log(code_buttons.code[0]['expected_output']);
+    console.log('expected ' + expected);
+
+    if (output.trim() === expected) {
+      console.log('result matched');
+      this.setState({ output_title: 'Output matches' });
+      this.setState({ code_matched: true });
+    } else {
+      this.setState({ output_title: 'Output doesn\'t match' });
+    }
+  }
+
+
   onChangeNew(newValue) {
+    this.state.output = '';
     console.log(newValue);
     console.log(CodeReply.state);
+    console.log('props message during onChangeNew')
+    this.setState({code: newValue});
+    //console.log(this.props.message[3][1][4][1][2])
+    //console.log(this.props.message[3])
 
     Sk.configure({
       read: builtinRead,
-      output: python_out,
-      __future__: Sk.python3,
-    })
+      output: this.pythonOutNew,
+      __future__: Sk.python3
+    });
     Sk.misceval.asyncToPromise(() => {
-      return Sk.importMainWithBody('<stdin>', false, newValue, true)
+      return Sk.importMainWithBody('<stdin>', false, newValue, true);
     })
       .then(mod => {
-        const method = mod.tp$getattr(Sk.ffi.remapToPy('run'));
+        //const expected = this.props.message.get('code');
+        //console.log('expected fulfilled' + expected);
+        //console.log('Code output fulfilled ' + this.state.output);
+        //console.log('mod1::', mod);
+        //const method = mod.tp$getattr(Sk.ffi.remapToPy('run'));
         //const out = Sk.misceval.call(method, undefined, undefined, undefined, undefined);
+        //console.log('out new1 ' + out);
         //console.log('out::' + out);
         //return [out, Sk.ffi.remapToJs(out)]
-      })
+      });
   }
+
+  handleClick = (action) => {
+    console.log(action)
+    if (!action || action.type !== 'postback') return;
+    const {
+      chooseReply,
+      id
+    } = this.props;
+
+    const payload = action['payload'];
+    console.log("handleClick::" )
+    console.log(payload)
+
+    // /goodbye{"trivia_user_answer:": "code"}
+
+    // /code_submitted{"code:": "print("hello")" , "code_output":"10"}
+
+    // eslint-disable-next-line camelcase
+    const {code , code_output, code_matched} = this.state
+    // eslint-disable-next-line camelcase
+    const payload_temp = `${payload}{"code:": "${JSON.stringify(code).replace(/"/g, '\\\"')}" , "code_output":"${JSON.stringify(code_output).replace(/"/g, '\\\"')}", "code_matched": ${code_matched}}`
+    console.log(payload_temp)
+
+    const title = action['title'];
+    chooseReply(payload_temp, title, id);
+  };
 
   render() {
     return (
-      <div className="rw-video">
+      <div className="rw-code-container">
         {/*<b className="rw-carousel-card-title">*/}
         {/*  { this.props.message.get('title') }*/}
         {/*</b>*/}
-        <div className="rw-carousel-card">
-          <a
-            className="rw-carousel-card-title"
-          >
+        <div className="rw-code-card">
+          <a className="rw-code-card-title">
             {this.props.message.get('title')}
           </a>
+
           {/*<p className="rw-test">{this.props.message.get('code')}   </p>*/}
-          <AceEditor
+          {/*<AceEditor
             mode="python"
-            theme="monokai"
+            theme="clouds"
+            fontSize="16"
+            showPrintMargin="false"
+            showGutter="false"
+            highlightActiveLine="false"
             onChange={this.onChangeNew}
             name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
-          />
-
-          <div>
-            Output: {this.state.seconds}
+            editorProps={{ $blockScrolling: false }}
+            setOptions={{
+              enableBasicAutocompletion: false,
+              enableLiveAutocompletion: false,
+              enableSnippets: false,
+              showLineNumbers: false,
+              tabSize: 2,
+              cursorStyle: 'wide'
+            }}
+          />*/}
+          <div className="rw-code-card-block">
+            <AceEditor
+              placeholder="Type your Code here!!!"
+              mode="python"
+              theme="monokai"
+              name="python_window"
+              onLoad={this.onLoad}
+              height={324}
+              width={'439'}
+              onChange={this.onChangeNew}
+              fontSize={16}
+              showPrintMargin={true}
+              showGutter={true}
+              highlightActiveLine={true}
+              focus={true}
+              wrapEnabled={true}
+              setOptions={{
+                enableBasicAutocompletion: false,
+                enableLiveAutocompletion: false,
+                enableSnippets: false,
+                showLineNumbers: true,
+                tabSize: 2
+              }}/>
           </div>
+
+
+          <div className="rw-carousel-buttons-container">
+              <div
+                key={0}
+                className="rw-reply"
+                onClick={() => this.handleClick(this.props.message.toJS().code[0]['buttons'][0])}
+                role="button"
+                tabIndex={0}
+                style={{ borderColor: '#ffffff', color: '#ffffff' , 'background-color': 'darkgreen', 'border-color': 'darkgreen'}}
+              >
+{/*
+                <span>{this.props.message.toJS().code[0]['buttons'][0]['title']}</span>
+*/}
+                <span>{'submit answer'}</span>
+              </div>
+          </div>
+
+
 
         </div>
 
+        <div className="rw-code-output-card">
+          <a className="rw-code-output-card-title">
+            {this.state.output_title}
+          </a>
+          <div className="rw-code-card-block">
+            <AceEditor
+              placeholder=""
+              mode="html"
+              theme="solarized_light"
+              name="output_window"
+              editorProps={{ $blockScrolling: false }}
+              onLoad={this.onLoad}
+              //onChange={this.onChangeNew}
+              fontSize={16}
+              height={324}
+              width={'339'}
+              showPrintMargin={false}
+              showGutter={false}
+              highlightActiveLine={false}
+              value={this.state.output}
+              readOnly={true}
+              wrapEnabled={true}
+              cursorStart={0}
+              setOptions={{
+                enableBasicAutocompletion: false,
+                enableLiveAutocompletion: false,
+                enableSnippets: false,
+                showLineNumbers: false,
+                tabSize: 2
+              }}/>
+          </div>
+        </div>
+
       </div>
+
+
     );
   }
 }
 
 
 CodeReply.propTypes = {
-  message: PROP_TYPES.CODEREPLY
+  message: PROP_TYPES.CODEREPLY,
+  chooseReply: PropTypes.func.isRequired,
+  id: PropTypes.number
 };
 
-export default CodeReply;
+const mapDispatchToProps = dispatch => ({
+  toggleInputDisabled: () => dispatch(toggleInputDisabled()),
+  changeInputFieldHint: hint => dispatch(changeInputFieldHint(hint)),
+  chooseReply: (payload, title, id) => {
+    dispatch(setButtons(id, title));
+    dispatch(addUserMessage(title));
+    dispatch(emitUserMessage(payload));
+    // dispatch(toggleInputDisabled());
+  }
+});
+
+const mapStateToProps = state => ({
+
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(CodeReply);
 

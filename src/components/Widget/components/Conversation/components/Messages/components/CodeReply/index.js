@@ -29,7 +29,7 @@ class CodeReply extends PureComponent {
     super(props);
     this.onChangeNew = this.onChangeNew.bind(this);
     this.pythonOutNew = this.pythonOutNew.bind(this);
-    this.state = { seconds: 0, output: '', output_title: 'Output', code: '', code_output: '', code_matched: false, expected_code: props.message.toJS().code[0].expected_code };
+    this.state = { seconds: 0, output: '', output_title: 'Output', code: '', code_output: '', code_matched: false, expected_code: props.message.toJS().code[0].expected_code, validate_code: props.message.toJS().code[0].validate_code, validation_type: props.message.toJS().code[0].validation_type };
     initPython();
 
     console.log(`props.message:: ${props.message}`);
@@ -74,14 +74,27 @@ class CodeReply extends PureComponent {
     console.log(`Code output after ${this.state.output}`);
     // const expected = this.props.message.get('code'.trim());
 
+    // eslint-disable-next-line camelcase
+    // eslint-disable-next-line camelcase
     const code_buttons = this.props.message.toJS();
+    // eslint-disable-next-line camelcase
+    console.log(`code_buttons ${this.props.message.toJS().code[0]}`);
+    console.log(this.props.message.toJS().code[0]);
     const expected = code_buttons.code[0].expected_output.trim();
     console.log(code_buttons.code[0].expected_output);
     console.log(`expected ${expected}`);
     console.log(`expected_code ${this.props.message.toJS().code[0].expected_code}`);
+    console.log(`validate_code ${this.props.message.toJS().code[0].validate_code}`);
+    console.log(`validation_type ${this.props.message.toJS().code[0].validation_type}`);
+    const validationType = this.props.message.toJS().code[0].validation_type;
 
-    if (output.trim() === expected) {
+    console.log(`debug match ${output.trim().includes(expected)}`);
+
+    if (validationType === 'single_answer' && output.trim() === expected) {
       console.log('result matched');
+      this.setState({ output_title: 'Output matches' });
+      this.setState({ code_matched: true });
+    } else if (validationType === 'single_contains' && output.trim().includes(expected)) {
       this.setState({ output_title: 'Output matches' });
       this.setState({ code_matched: true });
     } else {
@@ -143,7 +156,6 @@ class CodeReply extends PureComponent {
     const title = action.title;
     chooseReply(payload_temp, title, id);
   };
-
 
 
   render() {

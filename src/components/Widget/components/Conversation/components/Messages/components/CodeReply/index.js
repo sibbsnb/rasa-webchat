@@ -69,6 +69,7 @@ class CodeReply extends PureComponent {
     console.log(`Code output new ${output}`);
     output = `${this.state.output}${output}`;
     const code_output = output;
+    //const code_output = "tbd";
     this.setState({ output });
     this.setState({ code_output });
     console.log(`Code output after ${this.state.output}`);
@@ -88,15 +89,34 @@ class CodeReply extends PureComponent {
     console.log(`validation_type ${this.props.message.toJS().code[0].validation_type}`);
     const validationType = this.props.message.toJS().code[0].validation_type;
 
-    console.log(`debug match ${output.trim().includes(expected)}`);
+    console.log(`debug match single_contains ${output.trim().includes(expected)}`);
+    console.log(`debug match multi_contains ${expected.includes(output.trim())}`);
+    this.setState({ output_title: 'Output doesn\'t match' });
 
     if (validationType === 'single_answer' && output.trim() === expected) {
       console.log('result matched');
       this.setState({ output_title: 'Output matches' });
       this.setState({ code_matched: true });
     } else if (validationType === 'single_contains' && output.trim().includes(expected)) {
+      console.log('result matched');
       this.setState({ output_title: 'Output matches' });
       this.setState({ code_matched: true });
+    } else if (validationType === 'multi_contains' && expected.includes(output.trim())) {
+      console.log('result matched');
+      this.setState({ output_title: 'Output matches' });
+      this.setState({ code_matched: true });
+    } else if (validationType === 'number_range') {
+      const numberRange = expected.split(',');
+      const start = parseInt(numberRange[0]);
+      const end = parseInt(numberRange[1]);
+      if (!isNaN(output.trim())) {
+        const outInt = parseInt(output.trim());
+        if (outInt >= start && outInt <= end) {
+          console.log('result matched');
+          this.setState({ output_title: 'Output matches' });
+          this.setState({ code_matched: true });
+        }
+      }
     } else {
       this.setState({ output_title: 'Output doesn\'t match' });
     }
@@ -150,7 +170,9 @@ class CodeReply extends PureComponent {
     // eslint-disable-next-line camelcase
     const { code, code_output, code_matched } = this.state;
     // eslint-disable-next-line camelcase
-    const payload_temp = `${payload}{"code:": "${JSON.stringify(code).replace(/"/g, '\\\"')}" , "code_output":"${JSON.stringify(code_output).replace(/"/g, '\\\"')}", "code_matched": ${code_matched}}`;
+    //const payload_temp = `${payload}{"code:": "${JSON.stringify(code).replace(/"/g, '\\\"')}" , "code_output":"${JSON.stringify(code_output).replace(/"/g, '\\\"')}", "code_matched": ${code_matched}}`;
+    const payload_temp = `${payload}{"code:": "" , "code_output":"${JSON.stringify(code_output).replace(/"/g, '\\\"')}", "code_matched": ${code_matched}}`;
+
     console.log(payload_temp);
 
     const title = action.title;

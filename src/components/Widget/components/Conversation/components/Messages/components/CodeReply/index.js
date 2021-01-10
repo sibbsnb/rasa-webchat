@@ -89,8 +89,9 @@ class CodeReply extends PureComponent {
     console.log(`validation_type ${this.props.message.toJS().code[0].validation_type}`);
     const validationType = this.props.message.toJS().code[0].validation_type;
 
-    console.log(`debug match single_contains ${output.trim().includes(expected)}`);
-    console.log(`debug match multi_contains ${expected.includes(output.trim())}`);
+    //console.log(`debug match single_contains ${output.trim().includes(expected)}`);
+    //console.log(`debug match multi_contains ${expected.includes(output.trim())}`);
+    console.log(`debug match all_numbers_in_range ${output.trim()}`);
     this.setState({ output_title: 'Output doesn\'t match' });
 
     if (validationType === 'single_answer' && output.trim() === expected) {
@@ -105,6 +106,28 @@ class CodeReply extends PureComponent {
       console.log('result matched');
       this.setState({ output_title: 'Output matches' });
       this.setState({ code_matched: true });
+    } else if (validationType === 'all_numbers_in_range') {
+      const numberRange = expected.split(',');
+      const start = parseInt(numberRange[0]);
+      const end = parseInt(numberRange[1]);
+      console.log(output.trim())
+      console.log(isNaN(output.trim()))
+      if (output.trim()) {
+        // eslint-disable-next-line no-plusplus
+        console.log('start for loop')
+        let expectedOut = ''
+        for (let i = start; i <= end; i++) {
+          expectedOut = expectedOut + i.toString() + '\n';
+        }
+
+        console.log('expected' + expectedOut);
+        if(output.trim() === expectedOut.trim())
+        {
+          console.log('perfect match');
+          this.setState({ output_title: 'Output matches' });
+          this.setState({ code_matched: true });
+        }
+      }
     } else if (validationType === 'number_range') {
       const numberRange = expected.split(',');
       const start = parseInt(numberRange[0]);
